@@ -1,0 +1,413 @@
+local Settings = {
+
+    AimLock = {
+
+        Enabled = true,
+
+        Aimlockkey = "c",
+
+        Prediction = 0.1283142, -- 1268
+
+        Aimpart = 'HumanoidRootPart',
+
+        Notifications = true,
+
+        WatchTarget = true,
+
+        GetOnTheTarget = true,
+
+        LastPlace = true
+
+    },
+
+    Settings = {
+
+        Thickness = 0.5,
+
+        Transparency = 1,
+
+        Color = Color3.fromRGB(255, 255, 255),
+
+        FOV = false
+
+    }
+
+}
+
+for _, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+
+    if v:IsA("Script") and v.Name ~= "Health" and v.Name ~= "Sound" and v:FindFirstChild("LocalScript") then
+
+        v:Destroy()
+
+    end
+
+end
+
+game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+
+    repeat
+
+        wait()
+
+    until game.Players.LocalPlayer.Character
+
+    char.ChildAdded:Connect(function(child)
+
+        if child:IsA("Script") then
+
+            wait(0.1)
+
+            if child:FindFirstChild("LocalScript") then
+
+                child.LocalScript:FireServer()
+
+            end
+
+        end
+
+    end)
+
+end)
+
+local CurrentCamera = game:GetService("Workspace").CurrentCamera
+
+local Inset = game:GetService("GuiService"):GetGuiInset().Y
+
+local RunService = game:GetService("RunService")
+
+local Mouse = game.Players.LocalPlayer:GetMouse()
+
+local LocalPlayer = game.Players.LocalPlayer
+
+local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+
+local lastplace = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+
+local Line = Drawing.new("Line")
+
+local Circle = Drawing.new("Circle")
+
+local goingtarget
+
+local Plr
+
+Mouse.KeyDown:Connect(function(KeyPressed)
+
+    if KeyPressed == (Settings.AimLock.Aimlockkey) then
+
+        if Settings.AimLock.Enabled == true then
+
+            Settings.AimLock.Enabled = false
+
+            if Settings.AimLock.GetOnTheTarget == true then
+
+                goingtarget = false
+
+                game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+
+            end
+
+            if Settings.AimLock.LastPlace == true then
+
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = lastplace
+
+            else
+
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame =
+
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+
+            end
+
+            if Settings.AimLock.WatchTarget == true then
+
+                if humanoid then
+
+                    game.Workspace:FindFirstChildWhichIsA('Camera').CameraSubject = humanoid
+
+                end
+
+            end
+
+            if Settings.AimLock.Notifications == true then
+
+                Plr = nil
+
+                game.StarterGui:SetCore("SendNotification", {
+
+                    Title = "aori.kitten",
+
+                    Text = "unlocked.game"
+
+                })
+
+            end
+
+        else
+
+            Plr = FindClosestPlayer()
+
+            Settings.AimLock.Enabled = true
+
+            if Settings.AimLock.WatchTarget == true then
+
+                game.Workspace:FindFirstChildWhichIsA('Camera').CameraSubject =
+
+                    game.Players[Plr.Name].Character.Humanoid
+
+            end
+
+            if Settings.AimLock.GetOnTheTarget == true then
+
+                lastplace = game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+
+                goingtarget = true
+
+            end
+
+            if Settings.AimLock.Notifications == true then
+
+                game.StarterGui:SetCore("SendNotification", {
+
+                    Title = "aori.kitten",
+
+                    Text = "aimbotted on " .. tostring(Plr.DisplayName) .. "."
+
+                })
+
+            end
+
+        end
+
+    end
+
+end)
+
+function FindClosestPlayer()
+
+    local ClosestDistance, ClosestPlayer = math.huge, nil;
+
+    for _, Player in next, game:GetService("Players"):GetPlayers() do
+
+        local ISNTKNOCKED = Player.Character:WaitForChild("BodyEffects")["K.O"].Value ~= true
+
+        local ISNTGRABBED = Player.Character:FindFirstChild("GRABBING_COINSTRAINT") == nil
+
+        if Player ~= LocalPlayer then
+
+            local Character = Player.Character
+
+            if Character and Character.Humanoid.Health > 1 and ISNTKNOCKED and ISNTGRABBED then
+
+                local Position, IsVisibleOnViewPort = CurrentCamera:WorldToViewportPoint(Character.HumanoidRootPart
+
+                                                                                             .Position)
+
+                if IsVisibleOnViewPort then
+
+                    local Distance = (Vector2.new(Mouse.X, Mouse.Y) - Vector2.new(Position.X, Position.Y)).Magnitude
+
+                    if Distance < ClosestDistance then
+
+                        ClosestPlayer = Player
+
+                        ClosestDistance = Distance
+
+                    end
+
+                end
+
+            end
+
+        end
+
+    end
+
+    return ClosestPlayer, ClosestDistance
+
+end
+
+RunService.Heartbeat:connect(function()
+
+    if game.Players.LocalPlayer.Character.BodyEffects['K.O'].Value == true then
+
+        Settings.AimLock.WatchTarget = false
+
+        goingtarget = false
+
+    end
+
+    for _, v in pairs(game.Players.LocalPlayer.Character:GetChildren()) do
+
+        if v:IsA("Script") and v.Name ~= "Health" and v.Name ~= "Sound" and v:FindFirstChild("LocalScript") then
+
+            v:Destroy()
+
+        end
+
+    end
+
+    game.Players.LocalPlayer.CharacterAdded:Connect(function(char)
+
+        repeat
+
+            wait()
+
+        until game.Players.LocalPlayer.Character
+
+        char.ChildAdded:Connect(function(child)
+
+            if child:IsA("Script") then
+
+                wait(0.1)
+
+                if child:FindFirstChild("LocalScript") then
+
+                    child.LocalScript:FireServer()
+
+                end
+
+            end
+
+        end)
+
+    end)
+
+    if Settings.AimLock.Enabled == true then
+
+        local Vector = CurrentCamera:WorldToViewportPoint(Plr.Character[Settings.AimLock.Aimpart].Position +
+
+                                                              (Plr.Character[Settings.AimLock.Aimpart].Velocity *
+
+                                                                  Settings.AimLock.Prediction))
+
+        Line.Color = Settings.Settings.Color
+
+        Line.Transparency = Settings.Settings.Transparency
+
+        Line.Thickness = Settings.Settings.Thickness
+
+        Line.From = Vector2.new(Mouse.X, Mouse.Y + Inset)
+
+        Line.To = Vector2.new(Vector.X, Vector.Y)
+
+        Line.Visible = true
+
+        Circle.Position = Vector2.new(Mouse.X, Mouse.Y + Inset)
+
+        Circle.Visible = Settings.Settings.FOV
+
+        Circle.Thickness = 1.5
+
+        Circle.Thickness = 2
+
+        Circle.Radius = 60
+
+        Circle.Color = Settings.Settings.Color
+
+    else
+
+        Line.Visible = false
+
+        Circle.Visible = false
+
+    end
+
+    if Plr ~= nil then
+
+        if game.Players[Plr.Name].Character.BodyEffects['K.O'].Value == true then
+
+            Settings.AimLock.Enabled = false
+
+            Plr = nil
+
+            game.StarterGui:SetCore("SendNotification", {
+
+                Title = "aori.kitten",
+
+                Text = "player died.game"
+
+            })
+
+            if Settings.AimLock.WatchTarget == true then
+
+                if humanoid then
+
+                    game.Workspace:FindFirstChildWhichIsA('Camera').CameraSubject = humanoid
+
+                else
+
+                    repeat
+
+                        wait()
+
+                    until humanoid
+
+                    game.Workspace:FindFirstChildWhichIsA('Camera').CameraSubject = humanoid
+
+                end
+
+            end
+
+            if goingtarget == true then
+
+                goingtarget = false
+
+                game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, 0, 0)
+
+            end
+
+            if Settings.AimLock.LastPlace == true then
+
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = lastplace
+
+            else
+
+                game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame =
+
+                    game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame
+
+            end
+
+        end
+
+    end
+
+    if goingtarget == true then
+
+        game.Players.LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(
+
+            game.Players[Plr.Name].Character.HumanoidRootPart.Position +
+
+                Vector3.new(math.random(-5, 5), 8, math.random(-5, 5)))
+
+        game.Players.LocalPlayer.Character.HumanoidRootPart.Velocity = Vector3.new(0, -222.888, 0)
+
+    end
+
+end)
+
+local mt = getrawmetatable(game)
+
+local old = mt.__namecall
+
+setreadonly(mt, false)
+
+mt.__namecall = newcclosure(function(...)
+
+    local args = {...}
+
+    if Settings.AimLock.Enabled and getnamecallmethod() == "FireServer" and args[2] == "UpdateMousePos" then
+
+        args[3] = Plr.Character[Settings.AimLock.Aimpart].Position +
+
+                      (Plr.Character[Settings.AimLock.Aimpart].Velocity * Settings.AimLock.Prediction)
+
+        return old(unpack(args))
+
+    end
+
+    return old(...)
+
+end)
